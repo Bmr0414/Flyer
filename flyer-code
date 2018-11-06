@@ -1,0 +1,285 @@
+//Declare Variables
+var score = 0;
+var num  = 0;
+var numX = 0;
+var R = false;
+var hiScore = 0;
+var hi = false;
+var start = true;
+var S = true;
+var initalScore = 0;
+var level = 1;
+var smaller = 0;
+var size = 1;
+var border = 10;
+var pos = 390;
+var mult = 2;
+var deathp = 400;
+var deathb = 0;
+var P = false;
+var momentumY = 0;
+var momentumX = 0;
+var storednum = 0;
+var storednumX = 0;
+var spawn = false;
+
+//Create Sprites
+var character = createSprite(200, 100);
+character.setAnimation("flyer");
+
+var coin = createSprite(randomNumber(10,390),randomNumber(10,390));
+coin.setAnimation("coin");
+
+var obstacle = createSprite(randomNumber(10,390),randomNumber(10,390));
+obstacle.setAnimation("obstacle");
+
+var bounce = createSprite(randomNumber(10,390),randomNumber(10,390));
+bounce.setAnimation("bounce");
+
+//Set Hitboxes
+bounce.setCollider("circle");
+obstacle.setCollider("circle");
+coin.setCollider("circle");
+
+function draw() {
+  //call functions
+  drawBackground();
+  
+  if (start === true){
+    startMessage();
+  }
+if (keyWentDown("s")&&S === true){
+  start = false;
+  S = false;
+  num = 0.1;
+  numX = 0.5;
+}
+  character.velocityY = character.velocityY + num;
+  
+  PlayerControls();
+  
+  if (character.isTouching(coin)){
+    addScore();
+  }
+  
+  if(obstacle.isTouching(coin)){
+   spritesO();
+  }
+  else{
+    spawn = false;
+  }
+  if(obstacle.isTouching(bounce)){
+    spritesO();
+  }
+  else{
+    spawn = false;
+  }
+  
+  if (character.isTouching(bounce)){
+    character.bounciness = 2;
+    character.bounceOff(bounce);
+  }
+  if (bounce.isTouching(coin)){
+    spritesB();
+  }
+  else{
+    spawn = false;
+  }
+  if (bounce.isTouching(obstacle)){
+    spritesB();
+  }
+  else{
+    spawn = false;
+  }
+  if (bounce.isTouching(character)&&spawn === true){
+    spritesB();
+  }
+  if (obstacle.isTouching(character)&&spawn === true){
+    spritesO();
+  }
+  if (character.isTouching(coin)&&spawn === false){
+    coin.x = randomNumber(border,pos);
+    coin.y = randomNumber(border,pos);
+  }
+  else{
+    spawn = false;
+  }
+  if (character.x > deathp || character.x < deathb || character.y > deathp || character.y < deathb || character.isTouching(obstacle)){
+    deathSequence();
+  }
+  
+  if (keyDown("R") && R === true){
+    restart();
+  }
+  
+if (keyDown("p")&& S === false){
+  pauseProperties();
+}
+if(P === true){
+  pauseText();
+}
+if (keyDown("u")&& P === true){
+  unpause();
+}
+
+if (score >= initalScore + 10) {
+  increaseDifficulty();
+} 
+if (smaller >= size){
+  drawBorders();
+}
+  drawSprites();
+}
+function drawBackground(){
+  background("skyblue");
+  fill("black");
+  textSize(25);
+  text("High Score: " + hiScore, 50,50);
+  text("Score: " + score,250,50);
+  text("Level: " + level, 25,375);
+}
+function startMessage() {
+  textSize(20);
+    textAlign("CENTER");
+    fill("green");
+    text("Collect the coins without hitting the edges", 20,200);
+    text("Be sure to avoid the red obstacles", 50,225);
+    text("press S to start", 125, 250);
+    S = true;
+}
+function PlayerControls(){
+  if(keyWentDown("up")){
+    character.velocityY = -5;
+  }
+  if (keyDown("right")){
+    character.velocityX = character.velocityX + numX;
+  }
+   if (keyDown("left")){
+    character.velocityX = character.velocityX - numX;
+  }
+}
+function addScore() {
+  coin.x = randomNumber(border,pos);
+    coin.y = randomNumber(border,pos);
+    spritesO();
+    spritesB();
+    score = score + 1;
+    spawn = true;
+}
+function spritesO() {
+    obstacle.visible = false;
+    obstacle.x = randomNumber(border,pos);
+    obstacle.y =randomNumber(border,pos);
+    obstacle.visible = true;
+    if (obstacle.isTouching(character) === false){
+      spawn = false;
+    }
+    else {
+      spritesO();
+    }
+}
+function spritesB(){
+   bounce.visible = false;
+    bounce.x = randomNumber(border,pos);
+    bounce.y =randomNumber(border,pos);
+    bounce.visible = true;
+    if (bounce.isTouching(character) === false){
+      spawn = false;
+    }
+    else {
+      spritesB();
+    }
+}
+    function deathSequence(){
+    if(score > hiScore){
+    hiScore = score;
+    hi = true;
+    }
+    if (hi === true){
+      fill("red");
+      textAlign("CENTER");
+      text("New High Score!!",110,150);
+    }
+    score = 0;
+    character.velocityY = 0;
+    character.velocityX = 0;
+    num = 0;
+    fill("red");
+    textSize(35);
+    textAlign("CENTER");
+    text("Game Over",110,200);
+    textSize(20);
+    text("Press R to play again!",100,250);
+    
+    R = true;
+    level = 1;
+    initalScore = 0;
+    smaller = 0;
+    size = 1;
+    mult = 2;
+}
+function restart(){
+  character.x = 200;
+    character.y = 200;
+    num = 0.1;
+    numX = 0.5;
+    coin.x = randomNumber(border,pos);
+    coin.y = randomNumber(border,pos);
+    spritesO();
+    R = false;
+    hi = false;
+    pos = 390;
+    border = 10;
+    deathp = 400;
+    deathb= 0;
+}
+function pauseProperties(){
+  momentumY = character.velocityY;
+  momentumX = character.velocityX;
+  character.velocityY = 0;
+    character.velocityX = 0;
+    storednum = num;
+    storednumX = numX;
+    num = 0;
+    numX = 0;
+    P = true;
+} 
+function pauseText(){
+  textAlign("center");
+  text("PAUSED",200,200);
+  textSize(18);
+  text("press U to unpause",200,225);
+}
+function unpause(){
+  num = storednum;
+  numX = storednumX;
+  character.velocityY = momentumY;
+  character.velocityX = momentumX;
+  P = false;
+}
+function increaseDifficulty(){
+  num = num + 0.1;
+  numX = numX + 0.5;
+  initalScore = initalScore + 10;
+  level = level + 1;
+  smaller = smaller + 0.5;
+}
+function drawBorders() {
+  noStroke();
+  fill("red");
+  rect(pos, 0,border,400);
+  rect(0,0,border,400);
+  rect(10,pos,400,border);
+  rect(0,0,400,border);
+  if (mult == 2){
+    deathp = 380;
+    deathb = 20;
+  }
+  if (smaller > size*mult){
+    pos = pos - 10;
+    border = border + 10;
+    mult = mult + 1;
+    deathp = deathp - 10;
+  deathb = deathb + 10;
+  }
+}
